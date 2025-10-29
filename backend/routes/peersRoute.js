@@ -1,60 +1,94 @@
 import express from "express";
 import { startDiscovery, stopDiscovery, getPeers } from "../services/udpDiscovery.js";
+import { connectToPeer } from "../services/connectionService.js";
 
 const router = express.Router();
 let discoveryInstance = null;
 
-// Start discovery
+// 🟢 Start UDP discovery
 router.post("/start", async (req, res) => {
     try {
         const { id, name, port } = req.body;
         if (!id || !name || !port) {
-            return res.status(400).json({ message: "Missing required fields" });
+            return res.status(400).json({ message: "Missing required fields: id, name, port" });
         }
 
         if (discoveryInstance) {
-            return res.status(400).json({ message: "Discovery already running" });
+            return res.status(409).json({ message: "Discovery already running" });
         }
 
         discoveryInstance = startDiscovery({
             id,
             name,
             port,
-            meta: { app: "LocalShare", version: "1.0" },
+            meta: { app: "ShareApp", version: "1.0" },
         });
 
-        res.status(200).json({ message: "Discovery started successfully" });
+        console.log(`🚀 Discovery started for ${name} (${id}) on port ${port}`);
+        return res.status(200).json({ message: "Discovery started successfully" });
     } catch (err) {
-        console.error("Error starting discovery:", err);
-        res.status(500).json({ message: "Failed to start discovery", error: err.message });
+        console.error("❌ Error starting discovery:", err);
+        return res.status(500).json({ message: "Failed to start discovery", error: err.message });
     }
 });
 
-// Stop discovery
+// 🔴 Stop UDP discovery
 router.post("/stop", async (req, res) => {
     try {
         if (discoveryInstance) {
             discoveryInstance.stop();
             discoveryInstance = null;
+            console.log("🛑 Discovery stopped successfully");
             return res.status(200).json({ message: "Discovery stopped successfully" });
         } else {
-            return res.status(400).json({ message: "No discovery running" });
+            return res.status(400).json({ message: "No discovery currently running" });
         }
     } catch (err) {
-        console.error("Error stopping discovery:", err);
-        res.status(500).json({ message: "Failed to stop discovery", error: err.message });
+        console.error("❌ Error stopping discovery:", err);
+        return res.status(500).json({ message: "Failed to stop discovery", error: err.message });
     }
 });
 
-// Get list of peers
+// 📡 Fetch list of discovered peers
 router.get("/", async (req, res) => {
     try {
         const peers = getPeers();
-        res.json({ peers });
+        return res.status(200).json({
+            message: "Peers fetched successfully",
+            count: peers.length,
+            peers,
+        });
     } catch (err) {
-        console.error("Error fetching peers:", err);
-        res.status(500).json({ message: "Failed to get peers", error: err.message });
+        console.error("❌ Error fetching peers:", err);
+        return res.status(500).json({ message: "Failed to fetch peers", error: err.message });
     }
 });
+
+// 🔗 Connect to a specific peer
+router.post("/connect", async (req, res) => {
+    try {
+        const { peerId } = req.body;
+        if (!peerId) {
+            return res.status(400).json({ message: "Missing peerId in request body" });
+        }
+
+        const ws = await connectToPeer(peerId); // Waits until connection succeeds
+        console.log(`✅ Successfully connected to peer ${peerId}`);
+
+        return res.status(200).json({
+            message: `Successfully connected to peer ${peerId}`,
+            status: "connected",
+            peerId
+        });
+
+    } catch (err) {
+        console.error("❌ Error connecting to peer:", err);
+        return res.status(500).json({
+            message: "Failed to connect to peer",
+            error: err.message
+        });
+    }
+});
+
 
 export default router;

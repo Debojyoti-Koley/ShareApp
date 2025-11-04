@@ -11,6 +11,8 @@ import downloadRoute from './routes/downloadRoutes.js';
 import peersRoute from './routes/peersRoute.js';
 import { startDiscovery, stopDiscovery } from './services/udpDiscovery.js';
 import { startWebSocketServer } from './services/connectionService.js';
+import transfarRoute from './routes/transfarRoutes.js';
+import localDownloadRoutes from "./routes/localDownloadRoutes.js";
 
 dotenv.config();
 
@@ -24,6 +26,8 @@ app.use('/upload', uploadRoute);
 app.use('/download', downloadRoute);
 app.use('/list', listRoute);
 app.use('/peers', peersRoute);
+app.use('/transfer', transfarRoute);
+app.use('/local-download', localDownloadRoutes);
 
 // -------------------- SERVER + WEBSOCKET --------------------
 const PORT = process.env.PORT ? Number(process.env.PORT) : 5000;

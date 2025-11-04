@@ -1,6 +1,6 @@
 import { useState } from "react";
 
-export default function PeerList({ peers }) {
+export default function PeerList({ peers, onPeerConnect }) {
     const [status, setStatus] = useState({}); // { peerId: "connecting" | "connected" | "failed" }
 
     const styles = {
@@ -34,25 +34,29 @@ export default function PeerList({ peers }) {
         }),
     };
 
-    async function handleConnect(peerId, peerName) {
+    async function handleConnect(peer) {
+        const { id, name } = peer;
         try {
-            setStatus((prev) => ({ ...prev, [peerId]: "connecting" }));
+            setStatus((prev) => ({ ...prev, [id]: "connecting" }));
 
             const res = await fetch("http://localhost:5000/peers/connect", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ peerId }),
+                body: JSON.stringify({ peerId: id }),
             });
 
             if (res.ok) {
-                setStatus((prev) => ({ ...prev, [peerId]: "connected" }));
-                console.log(`Connected to peer ${peerName}`);
+                setStatus((prev) => ({ ...prev, [id]: "connected" }));
+                console.log(`✅ Connected to peer ${name}`);
+
+                // Inform parent component about the connected peer
+                if (onPeerConnect) onPeerConnect(peer);
             } else {
                 throw new Error("Failed to connect");
             }
         } catch (err) {
-            console.error(`Error connecting to ${peerName}:`, err);
-            setStatus((prev) => ({ ...prev, [peerId]: "failed" }));
+            console.error(`Error connecting to ${name}:`, err);
+            setStatus((prev) => ({ ...prev, [id]: "failed" }));
         }
     }
 
@@ -69,7 +73,7 @@ export default function PeerList({ peers }) {
                     </div>
                     <button
                         style={styles.connectBtn(peer.id)}
-                        onClick={() => handleConnect(peer.id, peer.name)}
+                        onClick={() => handleConnect(peer)}
                         disabled={status[peer.id] === "connecting"}
                     >
                         {status[peer.id] === "connected"

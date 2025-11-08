@@ -51,7 +51,7 @@ function App() {
         <div style={styles.section}>
           <h2>Uploaded Files</h2>
           <FetchAndDownload isWeb={isWeb} />
-          <FileUpload />
+          <FileUpload isWeb={isWeb} />
           <button style={styles.button}>Send</button>
         </div>
       ) : (

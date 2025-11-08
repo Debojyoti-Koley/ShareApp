@@ -24,10 +24,10 @@ router.post("/start", async (req, res) => {
             meta: { app: "ShareApp", version: "1.0" },
         });
 
-        console.log(`🚀 Discovery started for ${name} (${id}) on port ${port}`);
+        console.log(`[Backend-peersRoute.js] Discovery started for ${name} (${id}) on port ${port}`);
         return res.status(200).json({ message: "Discovery started successfully" });
     } catch (err) {
-        console.error("❌ Error starting discovery:", err);
+        console.error("[Backend-peersRoute.js] Error starting discovery:", err);
         return res.status(500).json({ message: "Failed to start discovery", error: err.message });
     }
 });
@@ -38,13 +38,13 @@ router.post("/stop", async (req, res) => {
         if (discoveryInstance) {
             discoveryInstance.stop();
             discoveryInstance = null;
-            console.log("🛑 Discovery stopped successfully");
+            console.log("[Backend-peersRoute.js] Discovery stopped successfully");
             return res.status(200).json({ message: "Discovery stopped successfully" });
         } else {
             return res.status(400).json({ message: "No discovery currently running" });
         }
     } catch (err) {
-        console.error("❌ Error stopping discovery:", err);
+        console.error("[Backend-peersRoute.js] Error stopping discovery:", err);
         return res.status(500).json({ message: "Failed to stop discovery", error: err.message });
     }
 });
@@ -59,7 +59,7 @@ router.get("/", async (req, res) => {
             peers,
         });
     } catch (err) {
-        console.error("❌ Error fetching peers:", err);
+        console.error("[Backend-peersRoute.js] Error fetching peers:", err);
         return res.status(500).json({ message: "Failed to fetch peers", error: err.message });
     }
 });
@@ -73,7 +73,7 @@ router.post("/connect", async (req, res) => {
         }
 
         const ws = await connectToPeer(peerId); // Waits until connection succeeds
-        console.log(`✅ Successfully connected to peer ${peerId}`);
+        console.log(`[Backend-peersRoute.js] Successfully connected to peer ${peerId}`);
 
         return res.status(200).json({
             message: `Successfully connected to peer ${peerId}`,

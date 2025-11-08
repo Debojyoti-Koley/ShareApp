@@ -4,10 +4,12 @@ import ToggleBtn from './components/ToggleBtn';
 import FileUpload from './components/FileUpload';
 import FetchAndDownload from './components/FetchAndDownload';
 import StartAndStopDiscovery from './components/StartAndStopDiscovery';
-
+import axios from "axios";
 
 function App() {
   const [isWeb, setIsWeb] = useState(false);
+  const [isReceiverMode, setIsReceiverMode] = useState(false);
+  const [status, setStatus] = useState("idle");
 
   const styles = {
     mainContainer: {
@@ -38,6 +40,34 @@ function App() {
     },
   };
 
+  const startReceiverMode = async () => {
+    try {
+      setStatus("starting receiver...");
+      const res = await axios.post("http://localhost:5000/peers/start", {
+        id: "receiver-device",
+        name: "Receiver",
+        port: 5000,
+      });
+      if (res.status === 200) {
+        setStatus("Receiver listening for senders...");
+        setIsReceiverMode(true);
+      }
+    } catch (err) {
+      console.error(err);
+      setStatus("Receiver start failed");
+    }
+  };
+
+  const stopReceiverMode = async () => {
+    try {
+      await axios.post("http://localhost:5000/peers/stop");
+      setIsReceiverMode(false);
+      setStatus("Receiver stopped");
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
   return (
     <div style={styles.mainContainer}>
       <h1>Welcome to ShareApp</h1>
@@ -52,14 +82,31 @@ function App() {
           <h2>Uploaded Files</h2>
           <FetchAndDownload isWeb={isWeb} />
           <FileUpload isWeb={isWeb} />
-          <button style={styles.button}>Send</button>
         </div>
       ) : (
         <div style={styles.section}>
-          <StartAndStopDiscovery />
-          {/* <FileUpload /> */}
-          <button style={styles.button}>Send</button>
-          <button style={{ ...styles.button, backgroundColor: "#28a745" }}>Receive</button>
+          {!isReceiverMode ? (
+            <>
+              <StartAndStopDiscovery />
+              <button
+                style={{ ...styles.button, backgroundColor: "#28a745" }}
+                onClick={startReceiverMode}
+              >
+                Receive
+              </button>
+            </>
+          ) : (
+            <>
+              <h3>📡 Receiver Mode Active</h3>
+              <p>Status: {status}</p>
+              <button
+                style={{ ...styles.button, backgroundColor: "#dc3545" }}
+                onClick={stopReceiverMode}
+              >
+                Stop Receiving
+              </button>
+            </>
+          )}
         </div>
       )}
     </div>

@@ -55,19 +55,18 @@ export function startDiscovery({ id, name, port, meta } = {}) {
     // Enable broadcast
     broadcaster.bind(() => {
         broadcaster.setBroadcast(true);
-        console.log(`📡 [Discovery] Broadcaster ready for ${name} (${id})`);
+        console.log(`[Backend-udpDiscovery.js] Broadcaster ready for ${name} (${id})`);
     });
 
     // Listen for incoming broadcasts
     listener.bind(BROADCAST_PORT, () => {
-        console.log(`👂 [Discovery] Listening for broadcasts on port ${BROADCAST_PORT}`);
+        console.log(`[Backend-udpDiscovery.js] Listening for broadcasts on port ${BROADCAST_PORT}`);
     });
 
     // Handle incoming messages
     listener.on('message', (msgBuffer, rinfo) => {
         try {
             const payload = JSON.parse(msgBuffer.toString('utf8'));
-
             if (!payload || !payload.id) return;
 
             // Ignore self broadcasts
@@ -87,29 +86,27 @@ export function startDiscovery({ id, name, port, meta } = {}) {
             });
 
             if (!existing) {
-                console.log(`🆕 [Peer Found] ${payload.name} (${rinfo.address}:${payload.port})`);
-            } else {
-                // console.log(`🔁 [Peer Updated] ${payload.name} (${rinfo.address})`);
+                console.log(`[Backend-udpDiscovery.js] [Peer Found] ${payload.name} (${rinfo.address}:${payload.port})`);
             }
         } catch (err) {
-            console.error("❌ [Discovery] Error parsing UDP message:", err.message);
+            console.error("[Backend-udpDiscovery.js] Error parsing UDP message:", err.message);
         }
     });
 
     // Broadcast presence periodically
     broadcastIntervalHandle = setInterval(() => {
+        if (!broadcaster) return; // Safe guard against closed socket
+
         try {
             const payload = makePresencePayload({ id, name, port, meta });
             const message = Buffer.from(payload, 'utf8');
             broadcaster.send(message, 0, message.length, BROADCAST_PORT, BROADCAST_ADDRESS, (err) => {
                 if (err) {
-                    console.error(`❌ [Discovery] Broadcast error: ${err.message}`);
-                } else {
-                    // console.log(`📢 [Discovery] Broadcasting presence as ${name} on ${id}:${port}`);
+                    console.error(`[Backend-udpDiscovery.js] Broadcast error: ${err.message}`);
                 }
             });
         } catch (err) {
-            console.error("❌ [Discovery] Broadcast failed:", err.message);
+            console.error("[Backend-udpDiscovery.js] Broadcast failed:", err.message);
         }
     }, BROADCAST_INTERVAL);
 
@@ -118,38 +115,49 @@ export function startDiscovery({ id, name, port, meta } = {}) {
         const cutoff = Date.now() - PEER_TTL;
         for (const [peerId, p] of peers) {
             if (p.lastSeen < cutoff) {
-                console.log(`⚰️ [Discovery] Peer ${p.name} (${p.ip}) removed (stale)`);
+                console.log(`[Backend-udpDiscovery.js] Peer ${p.name} (${p.ip}) removed (stale)`);
                 peers.delete(peerId);
             }
         }
     }, Math.max(3000, Math.floor(PEER_TTL / 2)));
 
-    console.log(`🚀 [Discovery] Started for ${name} (${id}) on port ${port}`);
+    console.log(`[Backend-udpDiscovery.js] Started for ${name} (${id}) on port ${port}`);
     return { stop: stopDiscovery };
 }
 
 // ---------- Stop discovery gracefully ----------
 export function stopDiscovery() {
-    console.log("🛑 [Discovery] Stopping discovery...");
+    console.log("[Backend-udpDiscovery.js] Stopping discovery...");
+
     try {
-        if (broadcastIntervalHandle) clearInterval(broadcastIntervalHandle);
-        if (cleanupIntervalHandle) clearInterval(cleanupIntervalHandle);
+        if (broadcastIntervalHandle) {
+            clearInterval(broadcastIntervalHandle);
+            broadcastIntervalHandle = null;
+            console.log("[Backend-udpDiscovery.js] Broadcast interval cleared.");
+        }
+
+        if (cleanupIntervalHandle) {
+            clearInterval(cleanupIntervalHandle);
+            cleanupIntervalHandle = null;
+            console.log("[Backend-udpDiscovery.js] Cleanup interval cleared.");
+        }
 
         if (broadcaster) {
             broadcaster.close();
             broadcaster = null;
-            console.log("📴 Broadcaster closed.");
+            console.log("[Backend-udpDiscovery.js] Broadcaster closed.");
         }
+
         if (listener) {
             listener.close();
             listener = null;
-            console.log("📴 Listener closed.");
+            console.log("[Backend-udpDiscovery.js] Listener closed.");
         }
 
         peers.clear();
-        console.log("🧹 Peers cleared.");
-    } catch (error) {
-        console.error("❌ [Discovery] Error stopping discovery:", error.message);
+        console.log("[Backend-udpDiscovery.js] Peers cleared.");
+    } catch (err) {
+        console.error("[Backend-udpDiscovery.js] Error stopping discovery:", err);
     }
 }
 

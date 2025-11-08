@@ -4,7 +4,7 @@ import ToggleBtn from './components/ToggleBtn';
 import FileUpload from './components/FileUpload';
 import FetchAndDownload from './components/FetchAndDownload';
 import StartAndStopDiscovery from './components/StartAndStopDiscovery';
-import LocalTransfer from './components/LocalTransfer';
+
 
 function App() {
   const [isWeb, setIsWeb] = useState(false);

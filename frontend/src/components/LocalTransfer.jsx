@@ -78,6 +78,7 @@ export default function LocalTransfer({ connectedPeer, deviceName }) {
       formData.append("peerId", connectedPeer.id);
       formData.append("from", deviceName);
 
+      // sending file offer
       const res = await axios.post("http://localhost:5000/transfer/send", formData, {
         headers: { "Content-Type": "multipart/form-data" },
         onUploadProgress: (e) => {
@@ -89,7 +90,7 @@ export default function LocalTransfer({ connectedPeer, deviceName }) {
       });
 
       if (res.status === 200) {
-        setUploadStatus("✅ Transfer complete!");
+        setUploadStatus("✅ file request sent successfully");
         console.log("[frontend] Transfer success:", res.data);
       } else {
         throw new Error("Upload failed");

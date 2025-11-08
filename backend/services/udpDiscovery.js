@@ -89,7 +89,7 @@ export function startDiscovery({ id, name, port, meta } = {}) {
             if (!existing) {
                 console.log(`🆕 [Peer Found] ${payload.name} (${rinfo.address}:${payload.port})`);
             } else {
-                console.log(`🔁 [Peer Updated] ${payload.name} (${rinfo.address})`);
+                // console.log(`🔁 [Peer Updated] ${payload.name} (${rinfo.address})`);
             }
         } catch (err) {
             console.error("❌ [Discovery] Error parsing UDP message:", err.message);
@@ -105,7 +105,7 @@ export function startDiscovery({ id, name, port, meta } = {}) {
                 if (err) {
                     console.error(`❌ [Discovery] Broadcast error: ${err.message}`);
                 } else {
-                    console.log(`📢 [Discovery] Broadcasting presence as ${name} on ${id}:${port}`);
+                    // console.log(`📢 [Discovery] Broadcasting presence as ${name} on ${id}:${port}`);
                 }
             });
         } catch (err) {

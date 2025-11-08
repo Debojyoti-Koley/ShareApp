@@ -23,7 +23,7 @@ router.post("/send", upload.array("files"), async (req, res) => {
     try {
         console.log("Incoming upload:", req.files);
         console.log("Body:", req.body);
-        const { peerId, from } = req.body;
+        const { peerId, deviceName } = req.body;
         const files = req.files;
 
         if (!files || files.length === 0) {
@@ -43,7 +43,7 @@ router.post("/send", upload.array("files"), async (req, res) => {
         }));
 
         // Notify the peer via WebSocket
-        sendFileOffer(peerId, fileInfos);
+        sendFileOffer(peerId, fileInfos, deviceName);
 
         return res.status(200).json({
             message: `📨 File offer sent to ${peerId}`,

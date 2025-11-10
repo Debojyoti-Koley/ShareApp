@@ -1,4 +1,54 @@
+# =========================
+# 🔹 Node & Dependencies
+# =========================
+node_modules/
 frontend/node_modules/
 backend/node_modules/
+
+# =========================
+# 🔹 Build / Dist Artifacts
+# =========================
+dist/
+frontend/build/
+*.log
+*.tmp
+*.bak
+
+# =========================
+# 🔹 Environment & Secrets
+# =========================
 backend/.env
-backend/uploads
+.env
+
+# =========================
+# 🔹 OS / Editor Files
+# =========================
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+
+# =========================
+# 🔹 Installer & Electron Output
+# =========================
+*.exe
+*.blockmap
+*.dmg
+*.AppImage
+latest.yml
+builder-debug.yml
+builder-effective-config.yaml
+
+# =========================
+# 🔹 Uploads / Temporary
+# =========================
+backend/uploads/
+
+# =========================
+# 🔹 Lock / Cache
+# =========================
+package-lock.json
+yarn.lock
+npm-debug.log*
+.cache/
